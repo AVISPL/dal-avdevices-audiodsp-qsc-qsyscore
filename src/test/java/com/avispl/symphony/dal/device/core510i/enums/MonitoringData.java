@@ -21,13 +21,23 @@ public enum MonitoringData {
 	IP_ADDRESS_1("169.254.232.117"),
 	IP_ADDRESS_2("***REMOVED***");
 
-	private final String name;
+	private final String data;
 
-	MonitoringData(String name) {
-		this.name = name;
+	/**
+	 * Parameterized constructor
+	 *
+	 * @param data response data of monitoring
+	 */
+	MonitoringData(String data) {
+		this.data = data;
 	}
 
-	public String getName() {
-		return this.name;
+	/**
+	 * retrieve {@code {@link #data }}
+	 *
+	 * @return value of {@link #data}
+	 */
+	public String getData() {
+		return this.data;
 	}
 }

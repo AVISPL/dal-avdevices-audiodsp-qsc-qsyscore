@@ -15,13 +15,23 @@ public enum ExceptionMessage {
 	GETTING_DEVICE_INFO_ERR("failed to get device info"),
 	GETTING_DEVICE_IP_ERR("failed to get device IP Address");
 
-	private final String name;
+	private final String message;
 
-	ExceptionMessage(String name) {
-		this.name = name;
+	/**
+	 * Parameterized constructor
+	 *
+	 * @param message Exception message
+	 */
+	ExceptionMessage(String message) {
+		this.message = message;
 	}
 
-	public String getName() {
-		return this.name;
+	/**
+	 * retrieve {@code {@link #message }}
+	 *
+	 * @return value of {@link #message}
+	 */
+	public String getMessage() {
+		return this.message;
 	}
 }

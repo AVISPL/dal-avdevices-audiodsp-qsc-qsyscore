@@ -66,9 +66,9 @@ public class QSYSCoreCommunicatorTest {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) qSYSCoreCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
-		Assertions.assertEquals(MonitoringData.DEVICE_ID.getName(), stats.get(QSYSCoreMonitoringMetric.DEVICE_ID.getName()));
-		Assertions.assertEquals(MonitoringData.DEVICE_MODEL.getName(), stats.get(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName()));
-		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getName(), stats.get(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName()));
+		Assertions.assertEquals(MonitoringData.DEVICE_ID.getData(), stats.get(QSYSCoreMonitoringMetric.DEVICE_ID.getName()));
+		Assertions.assertEquals(MonitoringData.DEVICE_MODEL.getData(), stats.get(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName()));
+		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getData(), stats.get(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName()));
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class QSYSCoreCommunicatorTest {
 	@Test
 	public void testQSysCoreCommunicatorDeviceEmptyResponse() throws Exception {
 		thrown.expect(ResourceNotReachableException.class);
-		thrown.expectMessage(ExceptionMessage.GETTING_DEVICE_INFO_ERR.getName() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getName() + QSYSCoreConstant.NEXT_LINE);
+		thrown.expectMessage(ExceptionMessage.GETTING_DEVICE_INFO_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE);
 		LoginInfo loginInfo = new LoginInfo();
 		loginInfo.setToken("Authorized");
 		loginInfo.setLoginDateTime(System.currentTimeMillis());
