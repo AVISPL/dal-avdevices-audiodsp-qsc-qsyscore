@@ -196,7 +196,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Value of list statistics property of device info is NONE
+	 * Update failedMonitor with Getting device info error message
 	 *
 	 * @param failedMonitor list statistics property
 	 */
@@ -248,7 +248,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Value of list statistics property of device info is NONE
+	 * Update failedMonitor with Getting device IP address error message
 	 *
 	 * @param failedMonitor list statistics property
 	 */
