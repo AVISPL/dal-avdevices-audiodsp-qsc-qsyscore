@@ -178,7 +178,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @param value value of device info
 	 * @return String (none/value)
 	 */
-	private String checkNoneData(String value) {
+	private String checkForNullData(String value) {
 		return value.equals("") ? QSYSCoreConstant.NONE : value;
 	}
 
@@ -228,11 +228,11 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 					DeviceInfo deviceInfo = objectMapper.readValue(response.toString(), DeviceInfo.class);
 					DeviceInfoData deviceInfoData = deviceInfo.getDeviceInfoData();
 
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_ID.getName(), checkNoneData(deviceInfoData.getDeviceId()));
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_NAME.getName(), checkNoneData(deviceInfoData.getDeviceName()));
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName(), checkNoneData(deviceInfoData.getDeviceModel()));
-					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkNoneData(deviceInfoData.getFirmwareVersion()));
-					stats.put(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName(), checkNoneData(deviceInfoData.getSerialNumber()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_ID.getName(), checkForNullData(deviceInfoData.getDeviceId()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_NAME.getName(), checkForNullData(deviceInfoData.getDeviceName()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName(), checkForNullData(deviceInfoData.getDeviceModel()));
+					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkForNullData(deviceInfoData.getFirmwareVersion()));
+					stats.put(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName(), checkForNullData(deviceInfoData.getSerialNumber()));
 				} else {
 					contributeNoneValueForDeviceStatistics(stats);
 					updateDeviceInfoFailedMonitor(failedMonitor);
@@ -276,7 +276,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 					Set<DeviceIPAddressData> deviceIPAddressDataList = deviceIPAddress.getDeviceInfoData().getListIPAddress();
 
 					for (DeviceIPAddressData ipAddress : deviceIPAddressDataList) {
-						stats.put(QSYSCoreMonitoringMetricGroup.DEVICE_INFO.getName() + QSYSCoreConstant.HASH + ipAddress.getName(), checkNoneData(ipAddress.getIpAddress()));
+						stats.put(QSYSCoreMonitoringMetricGroup.DEVICE_INFO.getName() + QSYSCoreConstant.HASH + ipAddress.getName(), checkForNullData(ipAddress.getIpAddress()));
 					}
 				} else {
 					updateDeviceIPFailedMonitor(failedMonitor);
