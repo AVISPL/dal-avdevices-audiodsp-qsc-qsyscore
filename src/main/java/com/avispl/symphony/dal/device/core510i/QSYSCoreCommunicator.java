@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,7 +31,9 @@ import com.avispl.symphony.dal.device.core510i.common.QSYSCoreMonitoringMetric;
 import com.avispl.symphony.dal.device.core510i.common.QSYSCoreMonitoringMetricGroup;
 import com.avispl.symphony.dal.device.core510i.common.QSYSCoreURL;
 import com.avispl.symphony.dal.device.core510i.dto.DeviceIPAddress;
+import com.avispl.symphony.dal.device.core510i.dto.DeviceIPAddressData;
 import com.avispl.symphony.dal.device.core510i.dto.DeviceInfo;
+import com.avispl.symphony.dal.device.core510i.dto.DeviceInfoData;
 import com.avispl.symphony.dal.device.core510i.dto.LoginInfo;
 
 /**
@@ -96,7 +99,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		failedMonitor = new HashMap<>();
 		loginInfo = initLoginInfo();
 		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
-		
+
 		populateQSYSMonitoringMetrics(stats);
 		extendedStatistics.setStatistics(stats);
 
@@ -140,7 +143,9 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Retrieve device login information
+	 * This method is used to retrieve device login information (Token) by send POST request to https://10.8.50.160/api/v0/logon
+	 *
+	 * When there is no token data or having an Exception, The Token of login information is going to set with null value
 	 */
 	private void retrieveTokenFromCore() {
 		String login = getLogin();
@@ -200,9 +205,18 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Retrieve device information
+	 * This method is used to retrieve device information by send GET request to http://10.8.50.160/api/v0/cores/self?meta=permissions
+	 * <li>Device ID</li>
+	 * <li>Device name</li>
+	 * <li>Device model</li>
+	 * <li>Firmware version</li>
+	 * <li>Serial number</li>
 	 *
 	 * @param stats list statistics property
+	 *
+	 * When token is null, the stats is going to contribute with NONE value and the failedMonitor is going to update
+	 * When there is no response data, the stats is going to contribute with none value and the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
 	private void retrieveDeviceInfo(Map<String, String> stats) {
 		try {
@@ -211,13 +225,14 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 				if (!response.get(QSYSCoreConstant.DATA).isEmpty()) {
 					ObjectMapper objectMapper = new ObjectMapper();
-					DeviceInfo deviceInfo = objectMapper.readValue(response.get(QSYSCoreConstant.DATA).toString(), DeviceInfo.class);
+					DeviceInfo deviceInfo = objectMapper.readValue(response.toString(), DeviceInfo.class);
+					DeviceInfoData deviceInfoData = deviceInfo.getDeviceInfoData();
 
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_ID.getName(), checkNoneData(deviceInfo.getDeviceId()));
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_NAME.getName(), checkNoneData(deviceInfo.getDeviceName()));
-					stats.put(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName(), checkNoneData(deviceInfo.getDeviceModel()));
-					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkNoneData(deviceInfo.getFirmwareVersion()));
-					stats.put(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName(), checkNoneData(deviceInfo.getSerialNumber()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_ID.getName(), checkNoneData(deviceInfoData.getDeviceId()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_NAME.getName(), checkNoneData(deviceInfoData.getDeviceName()));
+					stats.put(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName(), checkNoneData(deviceInfoData.getDeviceModel()));
+					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkNoneData(deviceInfoData.getFirmwareVersion()));
+					stats.put(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName(), checkNoneData(deviceInfoData.getSerialNumber()));
 				} else {
 					contributeNoneValueForDeviceStatistics(stats);
 					updateDeviceInfoFailedMonitor(failedMonitor);
@@ -242,9 +257,13 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Retrieve device IP address
+	 * This method is used to retrieve Set of device IP address by send GET request to http://10.8.50.160/api/v0/cores/self/config/network?meta=permissions&include=autoDns
 	 *
 	 * @param stats list statistics property
+	 *
+	 * When token is null, the failedMonitor is going to update
+	 * When there is no response data, the failedMonitor is going to update
+	 * When there is an exception, the failedMonitor is going to update and exception is not populated
 	 */
 	private void retrieveDeviceIPAddress(Map<String, String> stats) {
 		try {
@@ -253,9 +272,10 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 				if (!response.get(QSYSCoreConstant.DATA).isEmpty()) {
 					ObjectMapper objectMapper = new ObjectMapper();
-					DeviceInfo deviceInfo = objectMapper.readValue(response.get(QSYSCoreConstant.DATA).toString(), DeviceInfo.class);
+					DeviceIPAddress deviceIPAddress = objectMapper.readValue(response.toString(), DeviceIPAddress.class);
+					Set<DeviceIPAddressData> deviceIPAddressDataList = deviceIPAddress.getDeviceInfoData().getListIPAddress();
 
-					for (DeviceIPAddress ipAddress : deviceInfo.getListIPAddress()) {
+					for (DeviceIPAddressData ipAddress : deviceIPAddressDataList) {
 						stats.put(QSYSCoreMonitoringMetricGroup.DEVICE_INFO.getName() + QSYSCoreConstant.HASH + ipAddress.getName(), checkNoneData(ipAddress.getIpAddress()));
 					}
 				} else {
@@ -270,11 +290,11 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Count metric historical in the metrics
+	 * Counting metric group is failed to monitor
 	 *
-	 * @return number historical in the metric
+	 * @return number failed monitoring metric group in the metric
 	 */
-	private int getNoOfFailedMonitorMetric() {
+	private int getNoOfFailedMonitorMetricGroup() {
 		int noOfFailedMonitorMetric = 0;
 		for (QSYSCoreMonitoringMetricGroup metric : QSYSCoreMonitoringMetricGroup.values()) {
 			if (metric.isFailedMonitorCheck()) {
@@ -285,9 +305,17 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * Retrieve data and add to stats
+	 * This method is used to populate all monitoring properties:
+	 * <li>Device ID</li>
+	 * <li>Device name</li>
+	 * <li>Device model</li>
+	 * <li>Firmware version</li>
+	 * <li>Serial number</li>
+	 * <li>IP Address</li>
 	 *
 	 * @param stats list statistic property
+	 *
+	 * @throws ResourceNotReachableException when failedMonitor said all device monitoring data are failed to get
 	 */
 	private void populateQSYSMonitoringMetrics(Map<String, String> stats) {
 		Objects.requireNonNull(stats);
@@ -299,7 +327,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		retrieveDeviceInfo(stats);
 		retrieveDeviceIPAddress(stats);
 
-		if (failedMonitor.size() == getNoOfFailedMonitorMetric()) {
+		if (failedMonitor.size() == getNoOfFailedMonitorMetricGroup()) {
 			StringBuilder errBuilder = new StringBuilder();
 			for (Map.Entry<String, String> failedMetric : failedMonitor.entrySet()) {
 				errBuilder.append(failedMetric.getValue());

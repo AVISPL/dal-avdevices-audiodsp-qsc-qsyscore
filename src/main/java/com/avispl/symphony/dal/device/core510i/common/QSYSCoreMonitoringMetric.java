@@ -20,10 +20,20 @@ public enum QSYSCoreMonitoringMetric {
 
 	private final String name;
 
+	/**
+	 *Parameterized constructor
+	 *
+	 * @param name Name of QSYS Core monitoring metric
+	 */
 	QSYSCoreMonitoringMetric(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * retrieve {@code {@link #name}}
+	 *
+	 * @return value of {@link #name}
+	 */
 	public String getName() {
 		return this.name;
 	}

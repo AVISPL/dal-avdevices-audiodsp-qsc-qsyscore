@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2021 AVI-SPL, Inc. All Rights Reserved.
+ * Copyright (c) 2021 AVI-SPL Inc. All Rights Reserved.
  */
 
 package com.avispl.symphony.dal.device.core510i.dto;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Device IP Address provided by the Core Manager.
+ * All Data provided by the Core Manager for retrieving device IP Address.
  *
  * @author Harry
  * @since 1.0
@@ -16,45 +16,24 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceIPAddress {
 
-	@JsonAlias("name")
-	private String name;
-
-	@JsonAlias("ipAddress")
-	private String ipAddress;
+	@JsonAlias("data")
+	private DeviceInfoData deviceInfoData;
 
 	/**
-	 * Retrieves {@code {@link #name}}
+	 * Retrieves {@code {@link #deviceInfoData}}
 	 *
-	 * @return value of {@link #name}
+	 * @return value of {@link #deviceInfoData}
 	 */
-	public String getName() {
-		return this.name;
+	public DeviceInfoData getDeviceInfoData() {
+		return deviceInfoData;
 	}
 
 	/**
-	 * Sets {@code name}
+	 * Sets {@code deviceInfoData}
 	 *
-	 * @param name the {@code java.lang.String} field
+	 * @param deviceInfoData the {@code com.avispl.symphony.dal.device.core510i.dto.DeviceInfoData} field
 	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * Retrieves {@code {@link #ipAddress}}
-	 *
-	 * @return value of {@link #ipAddress}
-	 */
-	public String getIpAddress() {
-		return ipAddress;
-	}
-
-	/**
-	 * Sets {@code ipAddress}
-	 *
-	 * @param ipAddress the {@code java.lang.String} field
-	 */
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
+	public void setDeviceInfoData(DeviceInfoData deviceInfoData) {
+		this.deviceInfoData = deviceInfoData;
 	}
 }

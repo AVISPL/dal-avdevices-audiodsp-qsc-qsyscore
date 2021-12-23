@@ -18,15 +18,30 @@ public enum QSYSCoreMonitoringMetricGroup {
 	private final String name;
 	private final boolean isFailedMonitorCheck;
 
+	/**
+	 * Parameterized Constructor
+	 *
+	 * @param name Name of QSYS Core monitoring metric group
+	 * @param isFailedMonitor Group is failed to monitor
+	 */
 	QSYSCoreMonitoringMetricGroup(String name, boolean isFailedMonitor) {
 		this.name = name;
 		this.isFailedMonitorCheck = isFailedMonitor;
 	}
 
+	/**
+	 * retrieve {@code {@link #name}}
+	 *
+	 * @return value of {@link #name}
+	 */
 	public String getName() {
 		return this.name;
 	}
 
+	/**
+	 *
+	 * @return isFailedMonitorCheck
+	 */
 	public boolean isFailedMonitorCheck() {
 		return isFailedMonitorCheck;
 	}
