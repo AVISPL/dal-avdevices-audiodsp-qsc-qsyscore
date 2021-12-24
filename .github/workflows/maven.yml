@@ -5,6 +5,7 @@ on:
     branches: # reacting on push action to the following branches
       - develop
       - 'feature/**'
+      - 'bugfix/**'
 
 jobs:
   prep: # preparation job, retrieving current version from pom and the shortrev from git
