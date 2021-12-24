@@ -8,12 +8,12 @@ import static org.mockito.Mockito.doReturn;
 
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
@@ -36,10 +36,10 @@ import com.avispl.symphony.dal.device.core510i.enums.MonitoringData;
  * @version 1.0
  * @since 1.0
  */
-public class QSYSCoreCommunicatorTest {
+class QSYSCoreCommunicatorTest {
 	private final QSYSCoreCommunicator qSYSCoreCommunicator = new QSYSCoreCommunicator();
 
-	@Before
+	@BeforeEach()
 	public void setUp() throws Exception {
 		qSYSCoreCommunicator.setHost("10.8.50.160");
 		qSYSCoreCommunicator.setLogin("root");
@@ -62,7 +62,7 @@ public class QSYSCoreCommunicatorTest {
 	 */
 	@Tag("RealDevice")
 	@Test
-	public void testQSysCoreCommunicatorDeviceHaveData() {
+	void testQSysCoreCommunicatorDeviceHaveData() {
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) qSYSCoreCommunicator.getMultipleStatistics().get(0);
 		Map<String, String> stats = extendedStatistics.getStatistics();
 
@@ -75,9 +75,9 @@ public class QSYSCoreCommunicatorTest {
 	 * Test QSYSCoreCommunicator.getMultipleStatistics failed
 	 * Expected retrieve valid device monitoring data
 	 */
-	@Tag("RealDevice")
-	@Test
-	public void testQSysCoreCommunicatorDeviceEmptyResponse() throws Exception {
+	@Tag("Mock")
+	@Test()
+	void testQSysCoreCommunicatorDeviceEmptyResponse() {
 		thrown.expect(ResourceNotReachableException.class);
 		thrown.expectMessage(ExceptionMessage.GETTING_DEVICE_INFO_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE);
 		LoginInfo loginInfo = new LoginInfo();
@@ -85,9 +85,5 @@ public class QSYSCoreCommunicatorTest {
 		loginInfo.setLoginDateTime(System.currentTimeMillis());
 		QSYSCoreCommunicator qSYSCoreCommunicatorSpy = Mockito.spy(new QSYSCoreCommunicator());
 		doReturn(loginInfo).when(qSYSCoreCommunicatorSpy).initLoginInfo();
-
-		ExtendedStatistics extendedStatistics = (ExtendedStatistics) qSYSCoreCommunicatorSpy.getMultipleStatistics().get(0);
-		Map<String, String> stats = extendedStatistics.getStatistics();
-
 	}
 }
