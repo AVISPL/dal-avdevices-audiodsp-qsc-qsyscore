@@ -28,6 +28,7 @@ import com.avispl.symphony.dal.communicator.ConnectionStatus;
  * @since 1.0
  */
 public class QRCCommunicator extends BaseDevice implements Communicator {
+
 	private static final String ERROR_MESSAGE_CHANGE_PROPERTIES_AFTER_INIT = "Cannot change properties after init() was called";
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	private final ConnectionStatus status = new ConnectionStatus();
@@ -54,7 +55,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 	 */
 	public void setPort(int port) {
 		if (this.isInitialized()) {
-			throw new IllegalStateException("Cannot change properties after init() was called");
+			throw new IllegalStateException(ERROR_MESSAGE_CHANGE_PROPERTIES_AFTER_INIT);
 		} else {
 			this.port = port;
 		}
@@ -393,6 +394,8 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 			int x = inputStreamReader.read();
 			stringBuilder.append((char) x);
 
+			// Char '\00' has int value is 0
+			// It is the symbol represents for the end of one response
 			if (x == 0) {
 				countResponses++;
 			}
