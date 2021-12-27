@@ -1,3 +1,7 @@
+/*
+ *  Copyright (c) 2021 AVI-SPL, Inc. All Rights Reserved.
+ */
+
 package com.avispl.symphony.dal.device.core510i.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
