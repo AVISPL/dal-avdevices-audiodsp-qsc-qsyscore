@@ -34,6 +34,7 @@ public class QSYSCoreConstant {
 	public static final String MIN_GAIN = "min_gain";
 	public static final String OFF = "Off";
 	public static final String ON = "On";
+	public static final String GAIN_UNIT = "dB";
 	public static final String DEFAULT_RPC_VERSION = "2.0";
 	public static final int DEFAULT_ID = 1234;
 	public static final int QRC_PORT = 1710;

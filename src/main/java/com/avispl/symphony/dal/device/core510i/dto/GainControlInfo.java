@@ -14,7 +14,7 @@ public class GainControlInfo {
 
 	private String name;
 	private String gainString;
-	private double gainPosition;
+	private double gainValue;
 	private double mutePosition;
 	private String minGain;
 	private String maxGain;
@@ -56,21 +56,21 @@ public class GainControlInfo {
 	}
 
 	/**
-	 * Retrieves {@code {@link #gainPosition}}
+	 * Retrieves {@code {@link #gainValue }}
 	 *
-	 * @return value of {@link #gainPosition}
+	 * @return value of {@link #gainValue}
 	 */
-	public double getGainPosition() {
-		return gainPosition;
+	public double getGainValue() {
+		return gainValue;
 	}
 
 	/**
 	 * Sets {@code gainPosition}
 	 *
-	 * @param gainPosition the {@code double} field
+	 * @param gainValue the {@code double} field
 	 */
-	public void setGainPosition(double gainPosition) {
-		this.gainPosition = gainPosition;
+	public void setGainValue(double gainValue) {
+		this.gainValue = gainValue;
 	}
 
 	/**

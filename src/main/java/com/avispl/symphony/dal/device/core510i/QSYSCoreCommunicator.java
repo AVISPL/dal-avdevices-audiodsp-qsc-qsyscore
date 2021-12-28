@@ -567,8 +567,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			if (Objects.equals(control.getName(), QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getProperty())) {
 				// Get string value of gain, ex: "10dB"
 				controlInfo.setGainString(control.getString());
-				// Get gain position in slider, ex: 0.123
-				controlInfo.setGainPosition(control.getPosition());
+				controlInfo.setGainValue(Double.parseDouble(control.getString().replace(QSYSCoreConstant.GAIN_UNIT, "")));
 			} else if (Objects.equals(control.getName(), QSYSCoreControllingMetric.MUTE_CONTROL.getProperty())) {
 				// Get mute position in slider (0 and 1)
 				controlInfo.setMutePosition(control.getPosition());
@@ -608,7 +607,8 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(), "");
 		controllableProperties.add(createSlider(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(),
-				controlInfo.getMinGain(), controlInfo.getMaxGain(), (float) controlInfo.getGainPosition()));
+				controlInfo.getMinGain(), controlInfo.getMaxGain(), Float.parseFloat(controlInfo.getMinGain()), Float.parseFloat(controlInfo.getMaxGain()),
+				(float) controlInfo.getGainValue()));
 
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.MUTE_CONTROL.getMetric(), "");
 		controllableProperties.add(
@@ -707,12 +707,12 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @param initialValue initial value of the control
 	 * @return AdvancedControllableProperty slider instance
 	 */
-	private AdvancedControllableProperty createSlider(String name, String labelStart, String labelEnd, Float initialValue) {
+	private AdvancedControllableProperty createSlider(String name, String labelStart, String labelEnd, Float rangeStart, Float rangeEnd, Float initialValue) {
 		AdvancedControllableProperty.Slider slider = new AdvancedControllableProperty.Slider();
 		slider.setLabelStart(labelStart);
 		slider.setLabelEnd(labelEnd);
-		slider.setRangeStart(0F);
-		slider.setRangeEnd(1F);
+		slider.setRangeStart(rangeStart);
+		slider.setRangeEnd(rangeEnd);
 
 		return new AdvancedControllableProperty(name, new Date(), slider, initialValue);
 	}
