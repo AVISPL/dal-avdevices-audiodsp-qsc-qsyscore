@@ -325,7 +325,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 					stats.put(QSYSCoreMonitoringMetric.DEVICE_ID.getName(), checkForNullData(deviceInfoData.getDeviceId()));
 					stats.put(QSYSCoreMonitoringMetric.DEVICE_NAME.getName(), checkForNullData(deviceInfoData.getDeviceName()));
 					stats.put(QSYSCoreMonitoringMetric.DEVICE_MODEL.getName(), checkForNullData(deviceInfoData.getDeviceModel()));
-					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkForNullData(deviceInfoData.getFirmwareVersion()));
+					stats.put(QSYSCoreMonitoringMetric.FIRMWARE_VERSION.getName(), checkForNullData(deviceInfoData.getFirmwareVersion().getBuildName()));
 					stats.put(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName(), checkForNullData(deviceInfoData.getSerialNumber()));
 				} else {
 					contributeNoneValueForDeviceStatistics(stats);

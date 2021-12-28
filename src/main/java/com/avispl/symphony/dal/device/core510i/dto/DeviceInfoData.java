@@ -38,7 +38,7 @@ public class DeviceInfoData {
 	private String deviceName;
 
 	@JsonAlias("firmware")
-	private String firmwareVersion;
+	private FirmwareVersion firmwareVersion;
 
 	@JsonAlias("serialNo")
 	private String serialNumber;
@@ -120,19 +120,19 @@ public class DeviceInfoData {
 	 *
 	 * @return value of {@link #firmwareVersion}
 	 */
-	public String getFirmwareVersion() {
+	public FirmwareVersion getFirmwareVersion() {
 		return firmwareVersion;
 	}
 
 	/**
 	 * Sets {@code firmwareVersion}
 	 *
-	 * @param firmwareVersion the {@code java.lang.String} field
+	 * @param firmwareVersion the {@code com.avispl.symphony.dal.device.core510i.dto.FirmwareVersion} field
 	 */
-	public void setFirmwareVersion(String firmwareVersion) {
+	public void setFirmwareVersion(FirmwareVersion firmwareVersion) {
 		this.firmwareVersion = firmwareVersion;
 	}
-	
+
 	/**
 	 * Retrieves {@code {@link #serialNumber}}
 	 *
