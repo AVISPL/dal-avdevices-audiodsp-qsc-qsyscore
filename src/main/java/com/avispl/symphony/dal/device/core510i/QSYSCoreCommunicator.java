@@ -152,7 +152,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	@Override
 	public void controlProperties(List<ControllableProperty> controllableProperties) throws IllegalAccessException {
 		if (CollectionUtils.isEmpty(controllableProperties)) {
-			throw new IllegalArgumentException("AverCommunicator: Controllable properties cannot be null or empty");
+			throw new IllegalArgumentException("QSYSCoreCommunicator: Controllable properties cannot be null or empty");
 		}
 
 		for (ControllableProperty controllableProperty : controllableProperties) {
@@ -608,7 +608,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(), "");
 		controllableProperties.add(createSlider(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(),
-				controlInfo.getMinGain(), controlInfo.getMinGain(), (float) controlInfo.getGainPosition()));
+				controlInfo.getMinGain(), controlInfo.getMaxGain(), (float) controlInfo.getGainPosition()));
 
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.MUTE_CONTROL.getMetric(), "");
 		controllableProperties.add(
