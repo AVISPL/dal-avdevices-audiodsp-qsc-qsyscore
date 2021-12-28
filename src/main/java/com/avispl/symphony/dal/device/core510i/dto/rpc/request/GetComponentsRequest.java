@@ -23,4 +23,13 @@ public class GetComponentsRequest extends RpcRequest {
 	public GetComponentsRequest() {
 		this.method = QSYSCoreControllingMethod.COMPONENT_GET_COMPONENTS.getName();
 	}
+
+	/**
+	 * Retrieves {@code {@link #params}}
+	 *
+	 * @return value of {@link #params}
+	 */
+	public String getParams() {
+		return params;
+	}
 }
