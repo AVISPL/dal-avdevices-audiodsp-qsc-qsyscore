@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doReturn;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
@@ -102,10 +103,10 @@ class QSYSCoreCommunicatorTest {
 	@Tag("Mock")
 	@Test
 	void testHandleGainInputFromUser() {
-		String inputGain = "  test  ,  test  test   , test ,test,  #t#es#t   #  , # ,#";
+		String inputGain = "  test  ,  test  test   , test ,test";
 		qSYSCoreCommunicator.setGain(inputGain);
 
-		String[] expectedNamedGainComponents = new String[] { "test", "test  test", "~t~es~t   ~", "~" };
+		String[] expectedNamedGainComponents = new String[] { "test", "test  test" };
 		String[] actualNamedGainComponents = qSYSCoreCommunicator.handleGainInputFromUser();
 
 		Assertions.assertArrayEquals(expectedNamedGainComponents, actualNamedGainComponents);
@@ -122,10 +123,19 @@ class QSYSCoreCommunicatorTest {
 		qSYSCoreCommunicator.setGain(availableGain);
 		ExtendedStatistics extendedStatistics = (ExtendedStatistics) qSYSCoreCommunicator.getMultipleStatistics().get(0);
 		List<AdvancedControllableProperty> advancedControllableProperties = extendedStatistics.getControllableProperties();
+		Map<String, String> stats = extendedStatistics.getStatistics();
+
+		String currentGain = null;
+		for (String key : stats.keySet()) {
+			if (Objects.equals(key, QSYSCoreConstant.GAIN_LABEL + availableGain + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric())) {
+				currentGain = stats.get(key);
+			}
+		}
 
 		for (AdvancedControllableProperty property : advancedControllableProperties) {
 			if (property.getName().equalsIgnoreCase(QSYSCoreConstant.GAIN_LABEL + availableGain + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric())) {
-				Assertions.assertTrue((float) property.getValue() >= 0F && (float) property.getValue() <= 1F);
+				assert currentGain != null;
+				Assertions.assertEquals(Double.parseDouble(currentGain.replace(QSYSCoreConstant.GAIN_UNIT, "")), (float) property.getValue());
 				return;
 			}
 		}

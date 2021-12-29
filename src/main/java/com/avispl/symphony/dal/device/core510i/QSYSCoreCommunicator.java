@@ -127,7 +127,8 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		// namedComponent = Named Component
 		String metricName = splitProperty[1];
 		String namedComponent = splitProperty[0].split(String.valueOf(QSYSCoreConstant.SPACE), 2)[1];
-		// replace back to tide char again
+
+		// replace back to hash char again
 		namedComponent = namedComponent.replace(QSYSCoreConstant.TIDE, QSYSCoreConstant.HASH);
 
 		QSYSCoreControllingMetric controllingMetric = QSYSCoreControllingMetric.getByMetric(QSYSCoreConstant.HASH + metricName);
@@ -457,6 +458,9 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 			try {
 				controlInfo = getControlInfoFromComponent(namedComponents, namedGainComponent);
+				// replace # by ~ due to Symphony doesn't accept #
+				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE);
+
 				if (controlInfo == null) {
 					errorMessage = QSYSCoreConstant.GETTING_DEVICE_INFO_ERR;
 
@@ -466,10 +470,25 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 					populateUnavailableGainControllingGroup(stats, namedGainComponent, errorMessage);
 				} else {
+					double minGain = Double.parseDouble(controlInfo.getMinGain());
+					double maxGain = Double.parseDouble(controlInfo.getMaxGain());
+
+					// swap 2 value then set back to control info
+					if (minGain > maxGain) {
+						maxGain = maxGain - minGain;
+						minGain = maxGain + minGain;
+						maxGain = minGain - maxGain;
+					}
+
+					controlInfo.setMinGain(String.valueOf(minGain));
+					controlInfo.setMaxGain(String.valueOf(maxGain));
 					controlInfo.setName(namedGainComponent);
-					populateAvailableGainControllingGroup(stats, controllableProperties, controlInfo);
+
+					populateAvailableGainControllingGroup(stats, controllableProperties, controlInfo, minGain != maxGain);
 				}
 			} catch (NameNotFoundException e) {
+				// replace # by ~ due to Symphony doesn't accept #
+				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE);
 				errorMessage = "Component \"" + namedGainComponent + "\" does not exist";
 
 				if (this.logger.isDebugEnabled()) {
@@ -491,7 +510,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		// Remove start and end spaces of each gain and replace '#' by '~'
 		for (int i = 0; i < namedGainComponents.length; ++i) {
 			namedGainComponents[i] = namedGainComponents[i].trim();
-			namedGainComponents[i] = namedGainComponents[i].replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE);
 		}
 
 		// Remove duplicate
@@ -601,14 +619,18 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @param stats is the map that store all statistics
 	 * @param controllableProperties is the list that store all controllable properties
 	 * @param controlInfo is used to get control information
+	 * @param canControlGain is used to check if we can control gain or not
 	 */
-	private void populateAvailableGainControllingGroup(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, GainControlInfo controlInfo) {
+	private void populateAvailableGainControllingGroup(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, GainControlInfo controlInfo, boolean canControlGain) {
+		controlInfo.setName(controlInfo.getName().replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE));
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), controlInfo.getGainString());
 
-		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(), "");
-		controllableProperties.add(createSlider(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(),
-				controlInfo.getMinGain(), controlInfo.getMaxGain(), Float.parseFloat(controlInfo.getMinGain()), Float.parseFloat(controlInfo.getMaxGain()),
-				(float) controlInfo.getGainValue()));
+		if (canControlGain) {
+			stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(), "");
+			controllableProperties.add(createSlider(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.GAIN_VALUE_CONTROL.getMetric(),
+					controlInfo.getMinGain(), controlInfo.getMaxGain(), Float.parseFloat(controlInfo.getMinGain()), Float.parseFloat(controlInfo.getMaxGain()),
+					(float) controlInfo.getGainValue()));
+		}
 
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.MUTE_CONTROL.getMetric(), "");
 		controllableProperties.add(

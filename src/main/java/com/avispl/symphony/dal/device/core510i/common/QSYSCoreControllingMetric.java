@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 public enum QSYSCoreControllingMetric {
 
-	CURRENT_GAIN_VALUE("#Current Gain Value", null),
+	CURRENT_GAIN_VALUE("#Gain Current Value", null),
 	GAIN_VALUE_CONTROL("#Gain Value Control", "gain"),
 	MUTE_CONTROL("#Mute", "mute"),
 	ERROR_MESSAGE("#Error Message", null);
