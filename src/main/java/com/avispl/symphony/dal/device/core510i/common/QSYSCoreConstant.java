@@ -13,7 +13,7 @@ package com.avispl.symphony.dal.device.core510i.common;
 public class QSYSCoreConstant {
 
 	public static final char HASH = '#';
-	public static final char TIDE = '~';
+	public static final char TILDE = '~';
 	public static final char COMMA = ',';
 	public static final char SPACE = ' ';
 	public static final char NEXT_LINE = '\n';
@@ -23,7 +23,7 @@ public class QSYSCoreConstant {
 	public static final String AUTHORIZED = "Authorized";
 	public static final String GETTING_DEVICE_INFO_ERR = "failed to get device info";
 	public static final String GETTING_DEVICE_IP_ERR = "failed to get device IP Address";
-	public static final String GETTING_CONTROL_INFO_ERR = "Cannot get current gain control information";
+	public static final String GETTING_MIN_MAX_ERR = "Min or max value has wrong number format";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
 	public static final String DATA = "data";
