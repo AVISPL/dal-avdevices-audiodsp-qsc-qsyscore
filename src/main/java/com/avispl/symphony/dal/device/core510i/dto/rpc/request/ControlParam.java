@@ -63,6 +63,11 @@ public class ControlParam {
 		this.controls = controls;
 	}
 
+	/**
+	 * This method used to add control property to control device
+	 *
+	 * @param controlProperty is the property want to add
+	 */
 	public void add(ControlProperty controlProperty) {
 		this.controls.add(controlProperty);
 	}

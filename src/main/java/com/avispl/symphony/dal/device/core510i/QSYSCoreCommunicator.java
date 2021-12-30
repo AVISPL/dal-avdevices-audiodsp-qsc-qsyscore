@@ -81,6 +81,10 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	private QRCCommunicator qrcCommunicator;
 	private Map<String, String> failedMonitor;
 	private LoginInfo loginInfo;
+	private ObjectMapper objectMapper;
+	private String lastControlledComponent = null;
+	private Map<String, String> lastStats = null;
+	private List<AdvancedControllableProperty> lastControllableProperties = null;
 
 	/**
 	 * Retrieves {@code {@link #gain}}
@@ -122,6 +126,11 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		}
 
 		String[] splitProperty = property.split(String.valueOf(QSYSCoreConstant.HASH));
+
+		if (splitProperty.length != 2) {
+			throw new IllegalArgumentException("Unexpected length of control property");
+		}
+
 		// Ex: Gain: Named Component#Gain Value Control
 		// metricName = Gain Value Control
 		// namedComponent = Named Component
@@ -129,7 +138,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		String namedComponent = splitProperty[0].split(String.valueOf(QSYSCoreConstant.SPACE), 2)[1];
 
 		// replace back to hash char again
-		namedComponent = namedComponent.replace(QSYSCoreConstant.TIDE, QSYSCoreConstant.HASH);
+		namedComponent = namedComponent.replace(QSYSCoreConstant.TILDE, QSYSCoreConstant.HASH);
 
 		QSYSCoreControllingMetric controllingMetric = QSYSCoreControllingMetric.getByMetric(QSYSCoreConstant.HASH + metricName);
 
@@ -142,6 +151,9 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			}
 			throw new IllegalAccessException("Cannot set " + controllingMetric.getProperty() + " value of component \"" + namedComponent + "\"");
 		}
+
+		// if success
+		lastControlledComponent = namedComponent;
 	}
 
 	/**
@@ -180,8 +192,19 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			initQRCCommunicator();
 		}
 
-		populateQSYSMonitoringMetrics(stats);
-		populateGainControllingMetrics(stats, controllableProperties);
+		// If we have last controlled component -> use last stats and last controllable properties to update only controlled component
+		if (lastControlledComponent != null && lastStats != null && lastControllableProperties != null) {
+			stats = lastStats;
+			controllableProperties = lastControllableProperties;
+			populateGainControllingMetrics(stats, controllableProperties, true);
+			// reset status of last controlled component
+			lastControlledComponent = null;
+		} else {
+			populateQSYSMonitoringMetrics(stats);
+			populateGainControllingMetrics(stats, controllableProperties, false);
+			lastStats = stats;
+			lastControllableProperties = controllableProperties;
+		}
 
 		extendedStatistics.setStatistics(stats);
 		extendedStatistics.setControllableProperties(controllableProperties);
@@ -319,7 +342,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 				JsonNode response = doGet(buildDeviceFullPath(QSYSCoreURL.BASE_URI + QSYSCoreURL.DEVICE_INFO), JsonNode.class);
 
 				if (!response.get(QSYSCoreConstant.DATA).isEmpty()) {
-					ObjectMapper objectMapper = new ObjectMapper();
+					objectMapper = new ObjectMapper();
 					DeviceInfo deviceInfo = objectMapper.readValue(response.toString(), DeviceInfo.class);
 					DeviceInfoData deviceInfoData = deviceInfo.getDeviceInfoData();
 
@@ -366,7 +389,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 				JsonNode response = doGet(buildDeviceFullPath(QSYSCoreURL.BASE_URI + QSYSCoreURL.DEVICE_IP_ADDRESS), JsonNode.class);
 
 				if (!response.get(QSYSCoreConstant.DATA).isEmpty()) {
-					ObjectMapper objectMapper = new ObjectMapper();
+					objectMapper = new ObjectMapper();
 					DeviceIPAddress deviceIPAddress = objectMapper.readValue(response.toString(), DeviceIPAddress.class);
 					Set<DeviceIPAddressData> deviceIPAddressDataList = deviceIPAddress.getDeviceInfoData().getListIPAddress();
 
@@ -436,16 +459,24 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param controllableProperties is the list that store all controllable properties
+	 * @param isUpdate is used to check if we just need to update only lastControlledComponent or not
 	 */
-	private void populateGainControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties) {
+	private void populateGainControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, boolean isUpdate) {
+		String[] namedGainComponents;
+
 		// If user doesn't input anything, just break out the method
 		if (gain == null) {
 			return;
 		}
 
-		String[] namedGainComponents = handleGainInputFromUser();
-
 		GetComponentsResponse namedComponents = (GetComponentsResponse) getResponsesFromDevice(new GetComponentsRequest(), GetComponentsResponse.class);
+
+		// If there is a last controlled component to be updated
+		if (lastControlledComponent != null && isUpdate) {
+			namedGainComponents = new String[] { lastControlledComponent };
+		} else {
+			namedGainComponents = handleGainInputFromUser();
+		}
 
 		// If there is no component in the design file -> just return and do nothing
 		if (namedComponents == null) {
@@ -454,12 +485,12 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 		for (String namedGainComponent : namedGainComponents) {
 			GainControlInfo controlInfo;
-			String errorMessage;
+			String errorMessage = null;
 
 			try {
 				controlInfo = getControlInfoFromComponent(namedComponents, namedGainComponent);
-				// replace # by ~ due to Symphony doesn't accept #
-				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE);
+				// replace # by ~ due to Symphony accept the # but it's used for group
+				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
 
 				if (controlInfo == null) {
 					errorMessage = QSYSCoreConstant.GETTING_DEVICE_INFO_ERR;
@@ -486,10 +517,15 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 					populateAvailableGainControllingGroup(stats, controllableProperties, controlInfo, minGain != maxGain);
 				}
-			} catch (NameNotFoundException e) {
-				// replace # by ~ due to Symphony doesn't accept #
-				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE);
-				errorMessage = "Component \"" + namedGainComponent + "\" does not exist";
+			} catch (Exception e) {
+				if (e instanceof NumberFormatException) {
+					errorMessage = QSYSCoreConstant.GETTING_MIN_MAX_ERR;
+				} else if (e instanceof NameNotFoundException) {
+					errorMessage = "Component \"" + namedGainComponent + "\" does not exist";
+				}
+
+				// replace # by ~ due to Symphony accept the # but it's used for group
+				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
 
 				if (this.logger.isDebugEnabled()) {
 					this.logger.debug(errorMessage);
@@ -507,7 +543,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	public String[] handleGainInputFromUser() {
 		String[] namedGainComponents = gain.split(String.valueOf(QSYSCoreConstant.COMMA));
-		// Remove start and end spaces of each gain and replace '#' by '~'
+		// Remove start and end spaces of each gain
 		for (int i = 0; i < namedGainComponents.length; ++i) {
 			namedGainComponents[i] = namedGainComponents[i].trim();
 		}
@@ -622,7 +658,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @param canControlGain is used to check if we can control gain or not
 	 */
 	private void populateAvailableGainControllingGroup(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, GainControlInfo controlInfo, boolean canControlGain) {
-		controlInfo.setName(controlInfo.getName().replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TIDE));
+		controlInfo.setName(controlInfo.getName().replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE));
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), controlInfo.getGainString());
 
 		if (canControlGain) {
@@ -678,13 +714,13 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	public Rpc getResponsesFromDevice(Rpc request, Class<? extends Rpc> responseClass) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			String requestString = mapper.writeValueAsString(request) + QSYSCoreConstant.NULL_TERMINATED;
+			objectMapper = new ObjectMapper();
+			String requestString = objectMapper.writeValueAsString(request) + QSYSCoreConstant.NULL_TERMINATED;
 
 			String[] responses = qrcCommunicator.send(requestString);
 			verifyResponse(responses);
 
-			return mapper.readValue(responses[1], responseClass);
+			return objectMapper.readValue(responses[1], responseClass);
 		} catch (Exception e) {
 			if (this.logger.isDebugEnabled()) {
 				this.logger.error("error during get response from device", e);
