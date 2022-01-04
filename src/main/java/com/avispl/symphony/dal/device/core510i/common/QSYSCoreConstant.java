@@ -38,6 +38,7 @@ public class QSYSCoreConstant {
 	public static final String DEFAULT_RPC_VERSION = "2.0";
 	public static final int DEFAULT_ID = 1234;
 	public static final int QRC_PORT = 1710;
+	public static final int DELAY_TIME = 3000;
 
 	/**
 	 * Token timeout is 1 hour ( 60 minutes), as this case reserve 5 minutes to make sure we never failed because of the timeout

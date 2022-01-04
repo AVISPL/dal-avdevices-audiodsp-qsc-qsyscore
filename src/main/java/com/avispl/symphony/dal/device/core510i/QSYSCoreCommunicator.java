@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -82,9 +83,9 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	private Map<String, String> failedMonitor;
 	private LoginInfo loginInfo;
 	private ObjectMapper objectMapper;
-	private String lastControlledComponent = null;
-	private Map<String, String> lastStats = null;
-	private List<AdvancedControllableProperty> lastControllableProperties = null;
+	private boolean isEmergencyDelivery = false;
+	private ExtendedStatistics localExtStat = null;
+	private final ReentrantLock reentrantLock = new ReentrantLock();
 
 	/**
 	 * Retrieves {@code {@link #gain}}
@@ -117,43 +118,51 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	@Override
 	public void controlProperty(ControllableProperty controllableProperty) throws IllegalAccessException {
-		String property = controllableProperty.getProperty();
-		String value = String.valueOf(controllableProperty.getValue());
+		reentrantLock.lock();
+		try {
+			String property = controllableProperty.getProperty();
+			String value = String.valueOf(controllableProperty.getValue());
 
-		if (this.logger.isDebugEnabled()) {
-			this.logger.debug("controlProperty property " + property);
-			this.logger.debug("controlProperty value " + value);
-		}
-
-		String[] splitProperty = property.split(String.valueOf(QSYSCoreConstant.HASH));
-
-		if (splitProperty.length != 2) {
-			throw new IllegalArgumentException("Unexpected length of control property");
-		}
-
-		// Ex: Gain: Named Component#Gain Value Control
-		// metricName = Gain Value Control
-		// namedComponent = Named Component
-		String metricName = splitProperty[1];
-		String namedComponent = splitProperty[0].split(String.valueOf(QSYSCoreConstant.SPACE), 2)[1];
-
-		// replace back to hash char again
-		namedComponent = namedComponent.replace(QSYSCoreConstant.TILDE, QSYSCoreConstant.HASH);
-
-		QSYSCoreControllingMetric controllingMetric = QSYSCoreControllingMetric.getByMetric(QSYSCoreConstant.HASH + metricName);
-
-		ControlRequest request = buildSendControlCommand(namedComponent, QSYSCoreControllingMethod.COMPONENT_SET, Double.valueOf(value), controllingMetric.getProperty());
-		SetControlResponse response = (SetControlResponse) getResponsesFromDevice(request, SetControlResponse.class);
-
-		if (response == null || !response.getResult()) {
 			if (this.logger.isDebugEnabled()) {
-				this.logger.debug("Error: cannot set gain value of component " + namedComponent);
+				this.logger.debug("controlProperty property " + property);
+				this.logger.debug("controlProperty value " + value);
 			}
-			throw new IllegalAccessException("Cannot set " + controllingMetric.getProperty() + " value of component \"" + namedComponent + "\"");
-		}
 
-		// if success
-		lastControlledComponent = namedComponent;
+			String[] splitProperty = property.split(String.valueOf(QSYSCoreConstant.HASH));
+
+			if (splitProperty.length != 2) {
+				throw new IllegalArgumentException("Unexpected length of control property");
+			}
+
+			// Ex: Gain: Named Component#Gain Value Control
+			// metricName = Gain Value Control
+			// namedComponent = Named Component
+			String metricName = splitProperty[1];
+			String namedComponent = splitProperty[0].split(String.valueOf(QSYSCoreConstant.SPACE), 2)[1];
+
+			// replace back to hash char again
+			namedComponent = namedComponent.replace(QSYSCoreConstant.TILDE, QSYSCoreConstant.HASH);
+
+			QSYSCoreControllingMetric controllingMetric = QSYSCoreControllingMetric.getByMetric(QSYSCoreConstant.HASH + metricName);
+
+			ControlRequest request = buildSendControlCommand(namedComponent, QSYSCoreControllingMethod.COMPONENT_SET, Double.valueOf(value), controllingMetric.getProperty());
+			SetControlResponse response = (SetControlResponse) getResponsesFromDevice(request, SetControlResponse.class);
+
+			if (response == null || !response.getResult()) {
+				if (this.logger.isDebugEnabled()) {
+					this.logger.debug("Error: cannot set gain value of component " + namedComponent);
+				}
+				throw new IllegalAccessException("Cannot set " + controllingMetric.getProperty() + " value of component \"" + namedComponent + "\"");
+			}
+
+			// if success
+			if (localExtStat != null) {
+				updateLocalExtStat(property, value, namedComponent, controllingMetric);
+				isEmergencyDelivery = true;
+			}
+		} finally {
+			reentrantLock.unlock();
+		}
 	}
 
 	/**
@@ -181,35 +190,35 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	@Override
 	public List<Statistics> getMultipleStatistics() throws Exception {
-		Map<String, String> stats = new HashMap<>();
-		List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
 		ExtendedStatistics extendedStatistics = new ExtendedStatistics();
+		// This is to make sure if the statistics is being fetched before/after any set of control operations
+		reentrantLock.lock();
+		try {
+			if (qrcCommunicator == null) {
+				initQRCCommunicator();
+			}
 
-		failedMonitor = new HashMap<>();
-		loginInfo = initLoginInfo();
+			if (isEmergencyDelivery && localExtStat != null) {
+				isEmergencyDelivery = false;
+			} else {
+				Map<String, String> stats = new HashMap<>();
+				List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
 
-		if (qrcCommunicator == null) {
-			initQRCCommunicator();
+				failedMonitor = new HashMap<>();
+				loginInfo = initLoginInfo();
+				
+				populateQSYSMonitoringMetrics(stats);
+				populateGainControllingMetrics(stats, controllableProperties);
+
+				extendedStatistics.setStatistics(stats);
+				extendedStatistics.setControllableProperties(controllableProperties);
+				localExtStat = extendedStatistics;
+			}
+		} finally {
+			reentrantLock.unlock();
 		}
 
-		// If we have last controlled component -> use last stats and last controllable properties to update only controlled component
-		if (lastControlledComponent != null && lastStats != null && lastControllableProperties != null) {
-			stats = lastStats;
-			controllableProperties = lastControllableProperties;
-			populateGainControllingMetrics(stats, controllableProperties, true);
-			// reset status of last controlled component
-			lastControlledComponent = null;
-		} else {
-			populateQSYSMonitoringMetrics(stats);
-			populateGainControllingMetrics(stats, controllableProperties, false);
-			lastStats = stats;
-			lastControllableProperties = controllableProperties;
-		}
-
-		extendedStatistics.setStatistics(stats);
-		extendedStatistics.setControllableProperties(controllableProperties);
-
-		return Collections.singletonList(extendedStatistics);
+		return Collections.singletonList(localExtStat);
 	}
 
 	/**
@@ -246,6 +255,45 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		qrcCommunicator.setHost(this.host);
 		qrcCommunicator.setPort(QSYSCoreConstant.QRC_PORT);
 		qrcCommunicator.init();
+	}
+
+	/**
+	 * This method used to update local extended statistics when control a property
+	 *
+	 * @param property is used to update
+	 * @param value is used to update
+	 * @param namedComponent is used to update
+	 */
+	private void updateLocalExtStat(String property, String value, String namedComponent, QSYSCoreControllingMetric controllingMetric) {
+		if (localExtStat.getStatistics() == null || localExtStat.getControllableProperties() == null) {
+			return;
+		}
+
+		namedComponent = namedComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
+		String gainString = value;
+		float gainValue = Float.parseFloat(value);
+
+		// ex: 9.0 -> 9.00, -2.0 -> -2.00 (Only Gain)
+		if (controllingMetric == QSYSCoreControllingMetric.GAIN_VALUE_CONTROL) {
+			if (Math.abs(gainValue / 10) < 1) {
+				gainString = gainString + '0';
+			}
+			gainString += QSYSCoreConstant.GAIN_UNIT;
+			localExtStat.getStatistics().put(QSYSCoreConstant.GAIN_LABEL + namedComponent + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), gainString);
+		}
+
+		// Gain or Mute
+		localExtStat.getStatistics().put(property, "");
+		AdvancedControllableProperty advancedControllableProperty = localExtStat.getControllableProperties().stream()
+				.filter(item -> Objects.equals(item.getName(), property))
+				.findAny()
+				.orElse(null);
+
+		int index = localExtStat.getControllableProperties().indexOf(advancedControllableProperty);
+
+		assert advancedControllableProperty != null;
+		advancedControllableProperty.setValue(gainValue);
+		localExtStat.getControllableProperties().set(index, advancedControllableProperty);
 	}
 
 	/**
@@ -459,24 +507,15 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 *
 	 * @param stats is the map that store all statistics
 	 * @param controllableProperties is the list that store all controllable properties
-	 * @param isUpdate is used to check if we just need to update only lastControlledComponent or not
 	 */
-	private void populateGainControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, boolean isUpdate) {
-		String[] namedGainComponents;
-
+	private void populateGainControllingMetrics(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties) {
 		// If user doesn't input anything, just break out the method
 		if (gain == null) {
 			return;
 		}
 
+		String[] namedGainComponents = handleGainInputFromUser();
 		GetComponentsResponse namedComponents = (GetComponentsResponse) getResponsesFromDevice(new GetComponentsRequest(), GetComponentsResponse.class);
-
-		// If there is a last controlled component to be updated
-		if (lastControlledComponent != null && isUpdate) {
-			namedGainComponents = new String[] { lastControlledComponent };
-		} else {
-			namedGainComponents = handleGainInputFromUser();
-		}
 
 		// If there is no component in the design file -> just return and do nothing
 		if (namedComponents == null) {
