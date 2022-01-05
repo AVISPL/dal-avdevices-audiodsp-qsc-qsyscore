@@ -45,6 +45,7 @@ import com.avispl.symphony.dal.device.core510i.dto.DeviceInfo;
 import com.avispl.symphony.dal.device.core510i.dto.DeviceInfoData;
 import com.avispl.symphony.dal.device.core510i.dto.GainControlInfo;
 import com.avispl.symphony.dal.device.core510i.dto.LoginInfo;
+import com.avispl.symphony.dal.device.core510i.dto.UpdateLocalExtStat;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.Rpc;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.request.ControlParam;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.request.ControlProperty;
@@ -86,6 +87,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	private boolean isEmergencyDelivery = false;
 	private ExtendedStatistics localExtStat = null;
 	private final ReentrantLock reentrantLock = new ReentrantLock();
+	private UpdateLocalExtStat updateLocalExtStatDto;
 
 	/**
 	 * Retrieves {@code {@link #gain}}
@@ -157,7 +159,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 			// if success
 			if (localExtStat != null) {
-				updateLocalExtStat(property, value, namedComponent, controllingMetric);
+				updateLocalExtStatDto = new UpdateLocalExtStat(property, value, namedComponent, controllingMetric);
 				isEmergencyDelivery = true;
 			}
 		} finally {
@@ -206,13 +208,18 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 				failedMonitor = new HashMap<>();
 				loginInfo = initLoginInfo();
-				
+
 				populateQSYSMonitoringMetrics(stats);
 				populateGainControllingMetrics(stats, controllableProperties);
 
 				extendedStatistics.setStatistics(stats);
 				extendedStatistics.setControllableProperties(controllableProperties);
 				localExtStat = extendedStatistics;
+			}
+
+			if (updateLocalExtStatDto != null) {
+				updateLocalExtStat(updateLocalExtStatDto.getProperty(), updateLocalExtStatDto.getValue(), updateLocalExtStatDto.getNamedComponent(), updateLocalExtStatDto.getControllingMetric());
+				updateLocalExtStatDto = null;
 			}
 		} finally {
 			reentrantLock.unlock();
@@ -258,7 +265,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
-	 * This method used to update local extended statistics when control a property
+	 * This method used to update local extended statistics when control a property or in monitoring cycle
 	 *
 	 * @param property is used to update
 	 * @param value is used to update
