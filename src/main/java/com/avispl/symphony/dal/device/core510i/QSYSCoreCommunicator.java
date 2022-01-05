@@ -142,9 +142,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			String metricName = splitProperty[1];
 			String namedComponent = splitProperty[0].split(String.valueOf(QSYSCoreConstant.SPACE), 2)[1];
 
-			// replace back to hash char again
-			namedComponent = namedComponent.replace(QSYSCoreConstant.TILDE, QSYSCoreConstant.HASH);
-
 			QSYSCoreControllingMetric controllingMetric = QSYSCoreControllingMetric.getByMetric(QSYSCoreConstant.HASH + metricName);
 
 			ControlRequest request = buildSendControlCommand(namedComponent, QSYSCoreControllingMethod.COMPONENT_SET, Double.valueOf(value), controllingMetric.getProperty());
@@ -276,7 +273,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			return;
 		}
 
-		namedComponent = namedComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
 		String gainString = value;
 		float gainValue = Float.parseFloat(value);
 
@@ -535,8 +531,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 			try {
 				controlInfo = getControlInfoFromComponent(namedComponents, namedGainComponent);
-				// replace # by ~ due to Symphony accept the # but it's used for group
-				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
 
 				if (controlInfo == null) {
 					errorMessage = QSYSCoreConstant.GETTING_DEVICE_INFO_ERR;
@@ -570,9 +564,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 					errorMessage = "Component \"" + namedGainComponent + "\" does not exist";
 				}
 
-				// replace # by ~ due to Symphony accept the # but it's used for group
-				namedGainComponent = namedGainComponent.replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE);
-
 				if (this.logger.isDebugEnabled()) {
 					this.logger.debug(errorMessage);
 				}
@@ -589,9 +580,20 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	public String[] handleGainInputFromUser() {
 		String[] namedGainComponents = gain.split(String.valueOf(QSYSCoreConstant.COMMA));
+		StringBuilder errorMessages = new StringBuilder();
+
 		// Remove start and end spaces of each gain
 		for (int i = 0; i < namedGainComponents.length; ++i) {
 			namedGainComponents[i] = namedGainComponents[i].trim();
+
+			if (namedGainComponents[i].matches(QSYSCoreConstant.SPECIAL_CHARS_PATTERN)) {
+				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ! @ % ^ & \\ ' ");
+			}
+		}
+
+		// Has error message
+		if (errorMessages.length() > 0) {
+			throw new IllegalArgumentException(errorMessages.toString());
 		}
 
 		// Remove duplicate
@@ -704,7 +706,6 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @param canControlGain is used to check if we can control gain or not
 	 */
 	private void populateAvailableGainControllingGroup(Map<String, String> stats, List<AdvancedControllableProperty> controllableProperties, GainControlInfo controlInfo, boolean canControlGain) {
-		controlInfo.setName(controlInfo.getName().replace(QSYSCoreConstant.HASH, QSYSCoreConstant.TILDE));
 		stats.put(QSYSCoreConstant.GAIN_LABEL + controlInfo.getName() + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), controlInfo.getGainString());
 
 		if (canControlGain) {
