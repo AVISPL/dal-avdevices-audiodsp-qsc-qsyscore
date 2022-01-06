@@ -215,7 +215,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			}
 
 			if (updateLocalExtStatDto != null) {
-				updateLocalExtStat(updateLocalExtStatDto.getProperty(), updateLocalExtStatDto.getValue(), updateLocalExtStatDto.getNamedComponent(), updateLocalExtStatDto.getControllingMetric());
+				updateLocalExtStat(updateLocalExtStatDto);
 				updateLocalExtStatDto = null;
 			}
 		} finally {
@@ -264,31 +264,29 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	/**
 	 * This method used to update local extended statistics when control a property or in monitoring cycle
 	 *
-	 * @param property is used to update
-	 * @param value is used to update
-	 * @param namedComponent is used to update
+	 * @param updateLocalExtStatDto is the dto to update local extended statistic
 	 */
-	private void updateLocalExtStat(String property, String value, String namedComponent, QSYSCoreControllingMetric controllingMetric) {
+	private void updateLocalExtStat(UpdateLocalExtStat updateLocalExtStatDto) {
 		if (localExtStat.getStatistics() == null || localExtStat.getControllableProperties() == null) {
 			return;
 		}
 
-		String gainString = value;
-		float gainValue = Float.parseFloat(value);
+		String gainString = updateLocalExtStatDto.getValue();
+		float gainValue = Float.parseFloat(updateLocalExtStatDto.getValue());
 
 		// ex: 9.0 -> 9.00, -2.0 -> -2.00 (Only Gain)
-		if (controllingMetric == QSYSCoreControllingMetric.GAIN_VALUE_CONTROL) {
+		if (updateLocalExtStatDto.getControllingMetric() == QSYSCoreControllingMetric.GAIN_VALUE_CONTROL) {
 			if (Math.abs(gainValue / 10) < 1) {
-				gainString = gainString + '0';
+				gainString = gainString + QSYSCoreConstant.ZERO;
 			}
 			gainString += QSYSCoreConstant.GAIN_UNIT;
-			localExtStat.getStatistics().put(QSYSCoreConstant.GAIN_LABEL + namedComponent + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), gainString);
+			localExtStat.getStatistics().put(QSYSCoreConstant.GAIN_LABEL + updateLocalExtStatDto.getNamedComponent() + QSYSCoreControllingMetric.CURRENT_GAIN_VALUE.getMetric(), gainString);
 		}
 
 		// Gain or Mute
-		localExtStat.getStatistics().put(property, "");
+		localExtStat.getStatistics().put(updateLocalExtStatDto.getProperty(), "");
 		AdvancedControllableProperty advancedControllableProperty = localExtStat.getControllableProperties().stream()
-				.filter(item -> Objects.equals(item.getName(), property))
+				.filter(item -> Objects.equals(item.getName(), updateLocalExtStatDto.getProperty()))
 				.findAny()
 				.orElse(null);
 

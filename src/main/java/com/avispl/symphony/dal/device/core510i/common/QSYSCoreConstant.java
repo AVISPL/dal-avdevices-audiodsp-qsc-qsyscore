@@ -13,11 +13,11 @@ package com.avispl.symphony.dal.device.core510i.common;
 public class QSYSCoreConstant {
 
 	public static final char HASH = '#';
-	public static final char TILDE = '~';
 	public static final char COMMA = ',';
 	public static final char SPACE = ' ';
 	public static final char NEXT_LINE = '\n';
 	public static final char NULL_TERMINATED = '\00';
+	public static final char ZERO = '0';
 	public static final String HTTP = "http://";
 	public static final String NONE = "None";
 	public static final String AUTHORIZED = "Authorized";
