@@ -288,6 +288,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		try {
 			response = this.send(data, true);
 		} finally {
+			this.destroyChannel();
 			writeLock.unlock();
 		}
 
