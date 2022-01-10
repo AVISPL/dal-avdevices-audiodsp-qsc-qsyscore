@@ -585,7 +585,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			namedGainComponents[i] = namedGainComponents[i].trim();
 
 			if (namedGainComponents[i].matches(QSYSCoreConstant.SPECIAL_CHARS_PATTERN)) {
-				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ! @ % ^ & \\ ' ");
+				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or contains <?");
 			}
 		}
 
