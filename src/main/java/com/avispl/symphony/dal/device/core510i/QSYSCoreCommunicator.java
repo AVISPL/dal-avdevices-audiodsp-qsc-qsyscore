@@ -486,7 +486,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	private void populateQSYSMonitoringMetrics(Map<String, String> stats) {
 		Objects.requireNonNull(stats);
-		if (StringUtils.isNullOrEmpty(getPassword()) && StringUtils.isNullOrEmpty(getLogin())) {
+		if (!StringUtils.isNullOrEmpty(getPassword()) && !StringUtils.isNullOrEmpty(getLogin())) {
 			retrieveTokenFromCore();
 		} else {
 			this.loginInfo.setToken(QSYSCoreConstant.AUTHORIZED);
