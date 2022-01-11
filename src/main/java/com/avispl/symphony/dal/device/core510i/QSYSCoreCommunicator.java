@@ -57,6 +57,7 @@ import com.avispl.symphony.dal.device.core510i.dto.rpc.response.ComponentPropert
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.GetComponentsResponse;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.GetControlResponse;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.SetControlResponse;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * QSC Q-SYS Core 510i Device Adapter
@@ -485,7 +486,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	private void populateQSYSMonitoringMetrics(Map<String, String> stats) {
 		Objects.requireNonNull(stats);
-		if (getLogin() != null && getPassword() != null) {
+		if (StringUtils.isNullOrEmpty(getPassword()) && StringUtils.isNullOrEmpty(getLogin())) {
 			retrieveTokenFromCore();
 		} else {
 			this.loginInfo.setToken(QSYSCoreConstant.AUTHORIZED);
