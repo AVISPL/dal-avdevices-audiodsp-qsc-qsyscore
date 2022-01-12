@@ -334,11 +334,15 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 						this.loginInfo.setLoginDateTime(System.currentTimeMillis());
 					} else {
 						this.loginInfo.setToken(null);
+						throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 					}
+				}else {
+					throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 				}
 			}
 		} catch (Exception e) {
 			this.loginInfo.setToken(null);
+			throw new ResourceNotReachableException (QSYSCoreConstant.GETTING_TOKEN_ERR);
 		}
 	}
 

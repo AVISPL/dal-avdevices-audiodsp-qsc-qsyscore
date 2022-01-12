@@ -82,6 +82,26 @@ class QSYSCoreCommunicatorTest {
 	}
 
 	/**
+	 * Test QSYSCoreCommunicator.getMultipleStatistics successful with valid username password
+	 * Expected retrieve valid device monitoring data
+	 */
+	@Tag("RealDevice")
+	@Test
+	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
+
+		QSYSCoreCommunicator qsysCoreCommunicatorSpy = Mockito.spy(QSYSCoreCommunicator.class);
+		qsysCoreCommunicatorSpy.setHost("***REMOVED***");
+		Mockito.when(qsysCoreCommunicatorSpy.getLogin()).thenReturn("");
+		Mockito.when(qsysCoreCommunicatorSpy.getPassword()).thenReturn("");
+		try {
+			qsysCoreCommunicatorSpy.getMultipleStatistics();
+		}catch (Exception e){
+			Assertions.assertEquals( ExceptionMessage.GETTING_DEVICE_INFO_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE,
+					e.getMessage());
+		}
+	}
+
+	/**
 	 * Test QSYSCoreCommunicator.getMultipleStatistics failed
 	 * Expected retrieve valid device monitoring data
 	 */
