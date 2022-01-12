@@ -23,6 +23,7 @@ public class QSYSCoreConstant {
 	public static final String AUTHORIZED = "Authorized";
 	public static final String GETTING_DEVICE_INFO_ERR = "failed to get device info";
 	public static final String GETTING_DEVICE_IP_ERR = "failed to get device IP Address";
+	public static final String GETTING_TOKEN_ERR = "Username and Password are incorrect";
 	public static final String GETTING_MIN_MAX_ERR = "Min or max value has wrong number format";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
@@ -35,7 +36,7 @@ public class QSYSCoreConstant {
 	public static final String OFF = "Off";
 	public static final String ON = "On";
 	public static final String GAIN_UNIT = "dB";
-	public static final String SPECIAL_CHARS_PATTERN = ".*[~!@#$%^&\\']|<(\\?).*";
+	public static final String SPECIAL_CHARS_PATTERN = ".*[~!@#$%^&\\\\'].*|.*<(\\?).*|.*(\\<)(\\/).*";
 	public static final String DEFAULT_RPC_VERSION = "2.0";
 	public static final int DEFAULT_ID = 1234;
 	public static final int QRC_PORT = 1710;

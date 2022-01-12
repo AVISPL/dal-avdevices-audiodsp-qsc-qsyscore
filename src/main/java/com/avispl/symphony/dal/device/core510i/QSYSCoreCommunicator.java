@@ -57,6 +57,7 @@ import com.avispl.symphony.dal.device.core510i.dto.rpc.response.ComponentPropert
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.GetComponentsResponse;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.GetControlResponse;
 import com.avispl.symphony.dal.device.core510i.dto.rpc.response.SetControlResponse;
+import com.avispl.symphony.dal.util.StringUtils;
 
 /**
  * QSC Q-SYS Core 510i Device Adapter
@@ -333,11 +334,15 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 						this.loginInfo.setLoginDateTime(System.currentTimeMillis());
 					} else {
 						this.loginInfo.setToken(null);
+						throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 					}
+				}else {
+					throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 				}
 			}
 		} catch (Exception e) {
 			this.loginInfo.setToken(null);
+			throw new ResourceNotReachableException (QSYSCoreConstant.GETTING_TOKEN_ERR);
 		}
 	}
 
@@ -485,7 +490,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	private void populateQSYSMonitoringMetrics(Map<String, String> stats) {
 		Objects.requireNonNull(stats);
-		if (getLogin() != null && getPassword() != null) {
+		if (!StringUtils.isNullOrEmpty(getPassword()) && !StringUtils.isNullOrEmpty(getLogin())) {
 			retrieveTokenFromCore();
 		} else {
 			this.loginInfo.setToken(QSYSCoreConstant.AUTHORIZED);
@@ -585,7 +590,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			namedGainComponents[i] = namedGainComponents[i].trim();
 
 			if (namedGainComponents[i].matches(QSYSCoreConstant.SPECIAL_CHARS_PATTERN)) {
-				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or contains <?");
+				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or contains <? ");
 			}
 		}
 
