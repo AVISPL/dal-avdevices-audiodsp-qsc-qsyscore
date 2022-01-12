@@ -108,6 +108,15 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 		this.gain = gain;
 	}
 
+	/**
+	 * Retrieves {@code {@link #loginInfo}}
+	 *
+	 * @return value of {@link #loginInfo}
+	 */
+	public LoginInfo getLoginInfo() {
+		return loginInfo;
+	}
+
 	@Override
 	protected void authenticate() {
 		// The device has its own authentication behavior, do not use the common one
