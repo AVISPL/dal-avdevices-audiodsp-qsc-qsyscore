@@ -227,6 +227,8 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * @return HttpHeaders contain Bearer token for authorization
 	 */
 	@Override
@@ -681,6 +683,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * This method is used to get min gain and max gain value from namedComponent
 	 *
 	 * @param controlInfo used to store gain control information
+	 * @param namedComponent is the component want to get min gain and max gain value
 	 */
 	private void getMinMaxGainControlValue(GainControlInfo controlInfo, Component namedComponent) {
 		for (ComponentProperty componentProperty : namedComponent.getProperties()) {
