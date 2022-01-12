@@ -83,7 +83,7 @@ class QSYSCoreCommunicatorTest {
 
 	/**
 	 * Test QSYSCoreCommunicator.getMultipleStatistics will not retrieve token when username and password are empty
-	 * Expected retrieve valid device monitoring data
+	 * Expected throw ResourceNotReachableException "failed to get failed to get device info failed to get device IP Address";
 	 */
 	@Tag("Mock")
 	@Test
@@ -102,7 +102,7 @@ class QSYSCoreCommunicatorTest {
 
 	/**
 	 * Test QSYSCoreCommunicator.getMultipleStatistics failed
-	 * Expected retrieve valid device monitoring data
+	 * Expected throw ResourceNotReachableException "failed to get failed to get device info failed to get device IP Address";
 	 */
 	@Tag("Mock")
 	@Test()
