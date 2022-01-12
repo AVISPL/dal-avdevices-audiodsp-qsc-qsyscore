@@ -13,9 +13,9 @@ package com.avispl.symphony.dal.device.core510i.enums;
 public enum ResponseString {
 	
 	ENGINE_STATUS(
-			"{\"jsonrpc\":\"2.0\",\"method\":\"EngineStatus\",\"params\":{\"Platform\":\"Core 110f\",\"State\":\"Active\",\"DesignName\":\"CeeSalt_TestCore_v3.1\",\"DesignCode\":\"joqw53I2hUnY\",\"IsRedundant\":false,\"IsEmulator\":false,\"Status\":{\"Code\":0,\"String\":\"OK - 11 OK\"}}}"),
+			"{\"jsonrpc\":\"2.0\",\"method\":\"EngineStatus\",\"params\":{\"Platform\":\"Core 110f\",\"State\":\"Active\",\"DesignName\":\"CeeSalt_TestCore_v3.1\",\"DesignCode\":\"OvRMzat8U7EQ\",\"IsRedundant\":false,\"IsEmulator\":false,\"Status\":{\"Code\":1,\"String\":\"Compromised - 10 OK, 1 Compromised\"}}}"),
 	STATUS_RESPONSE(
-			"{\"jsonrpc\":\"2.0\",\"result\":{\"Platform\":\"Core 110f\",\"State\":\"Active\",\"DesignName\":\"CeeSalt_TestCore_v3.1\",\"DesignCode\":\"joqw53I2hUnY\",\"IsRedundant\":false,\"IsEmulator\":false,\"Status\":{\"Code\":0,\"String\":\"OK - 11 OK\"}},\"id\":1234}");
+			"{\"jsonrpc\":\"2.0\",\"result\":{\"Platform\":\"Core 110f\",\"State\":\"Active\",\"DesignName\":\"CeeSalt_TestCore_v3.1\",\"DesignCode\":\"OvRMzat8U7EQ\",\"IsRedundant\":false,\"IsEmulator\":false,\"Status\":{\"Code\":0,\"String\":\"OK - 11 OK\"}},\"id\":1234}");
 
 	private final String jsonRpc;
 
