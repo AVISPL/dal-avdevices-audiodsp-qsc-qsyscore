@@ -286,16 +286,10 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 
 		// Gain or Mute
 		localExtStat.getStatistics().put(updateLocalExtStatDto.getProperty(), "");
-		AdvancedControllableProperty advancedControllableProperty = localExtStat.getControllableProperties().stream()
+
+		localExtStat.getControllableProperties().stream()
 				.filter(item -> Objects.equals(item.getName(), updateLocalExtStatDto.getProperty()))
-				.findAny()
-				.orElse(null);
-
-		int index = localExtStat.getControllableProperties().indexOf(advancedControllableProperty);
-
-		assert advancedControllableProperty != null;
-		advancedControllableProperty.setValue(gainValue);
-		localExtStat.getControllableProperties().set(index, advancedControllableProperty);
+				.forEach(item -> item.setValue(gainValue));
 	}
 
 	/**
@@ -336,13 +330,13 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 						this.loginInfo.setToken(null);
 						throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 					}
-				}else {
+				} else {
 					throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 				}
 			}
 		} catch (Exception e) {
 			this.loginInfo.setToken(null);
-			throw new ResourceNotReachableException (QSYSCoreConstant.GETTING_TOKEN_ERR);
+			throw new ResourceNotReachableException(QSYSCoreConstant.GETTING_TOKEN_ERR);
 		}
 	}
 
@@ -547,7 +541,8 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 					double minGain = Double.parseDouble(controlInfo.getMinGain());
 					double maxGain = Double.parseDouble(controlInfo.getMaxGain());
 
-					// swap 2 value then set back to control info
+					// QSys allows min gain > max gain but slider in Symphony does not allow it.
+					// So need to swap 2 gain value if min gain > max gain then set back to control info
 					if (minGain > maxGain) {
 						maxGain = maxGain - minGain;
 						minGain = maxGain + minGain;
@@ -590,7 +585,7 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 			namedGainComponents[i] = namedGainComponents[i].trim();
 
 			if (namedGainComponents[i].matches(QSYSCoreConstant.SPECIAL_CHARS_PATTERN)) {
-				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or contains <? ");
+				errorMessages.append("Component ").append(namedGainComponents[i]).append(" contains 1 of these special characters: ~ ! @ # $ % ^ & \\ ' or <? or <\\ ");
 			}
 		}
 

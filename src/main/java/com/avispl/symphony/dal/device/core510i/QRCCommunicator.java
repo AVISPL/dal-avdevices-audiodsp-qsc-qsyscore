@@ -37,7 +37,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 	protected int numOfResponses = 2;
 	private int socketTimeout = 4000;
 	private Socket socket;
-	private int port;
+	private int port = 1710;
 
 	/**
 	 * This method returns the device UPD port
@@ -183,7 +183,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		}
 
 		if (this.logger.isTraceEnabled()) {
-			this.logger.trace("Connecting to: " + this.host + " port: " + this.port);
+			this.logger.trace("Connecting to: ".concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 		}
 
 		Lock writeLock = this.lock.writeLock();
@@ -198,7 +198,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 			}
 		} catch (Exception exception) {
 			if (this.logger.isErrorEnabled()) {
-				this.logger.error("Error connecting to: " + this.host + " port: " + this.port, exception);
+				this.logger.error("Error connecting to: ".concat(this.host).concat(" port: ").concat(String.valueOf(this.port)), exception);
 			}
 
 			this.status.setLastError(exception);
@@ -216,7 +216,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 	 */
 	public void disconnect() {
 		if (this.logger.isTraceEnabled()) {
-			this.logger.trace("Disconnecting from: " + this.host + " port: " + this.port);
+			this.logger.trace("Disconnecting from: ".concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 		}
 
 		Lock writeLock = this.lock.writeLock();
@@ -278,7 +278,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		}
 
 		if (this.logger.isTraceEnabled()) {
-			this.logger.trace("Sending command: " + data + " to: " + this.host + " port: " + this.port);
+			this.logger.trace("Sending command: ".concat(data).concat(" to: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 		}
 
 		Lock writeLock = this.lock.writeLock();
@@ -312,31 +312,36 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 			}
 
 			if (this.logger.isDebugEnabled()) {
-				this.logger.debug("Sending: " + data + " to: " + this.host + " port: " + this.port);
+				this.logger.debug("Sending: ".concat(data).concat(" to: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 			}
 
 			String[] response = this.internalSend(data);
 
 			if (this.logger.isDebugEnabled()) {
-				this.logger.debug("Received response: " + Arrays.toString(response) + " from: " + this.host + " port: " + this.port);
+				this.logger.debug("Received response: ".concat(Arrays.toString(response)).concat(" from: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 			}
 
 			if (this.logger.isTraceEnabled()) {
-				this.logger.trace("Received response: " + Arrays.toString(response) + " from: " + this.host + " port: " + this.port);
+				this.logger.trace("Received response: ".concat(Arrays.toString(response)).concat(" from: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 			}
 
 			this.status.setLastTimestamp(System.currentTimeMillis());
 			return response;
 		} catch (CommandFailureException ex1) {
 			if (this.logger.isErrorEnabled()) {
-				this.logger.error("Command failed " + data + " to: " + this.host + " port: " + this.port + " connection state: " + this.status.getConnectionState(), ex1);
+				this.logger.error(
+						"Command failed ".concat(data).concat(" to: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)).concat(" connection state: ").concat(
+								String.valueOf(this.status.getConnectionState())),
+						ex1);
 			}
 
 			this.status.setLastTimestamp(System.currentTimeMillis());
 			throw ex1;
 		} catch (SocketTimeoutException ex2) {
 			if (this.logger.isDebugEnabled()) {
-				this.logger.debug("Time out while sending command: " + data + " to: " + this.host + " port: " + this.port + " connection state: " + this.status.getConnectionState() + " error: ", ex2);
+				this.logger.debug(
+						"Time out while sending command: ".concat(data).concat(" to: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)).concat(" connection state: ").concat(
+								String.valueOf(this.status.getConnectionState())).concat(" error: "), ex2);
 			}
 
 			this.status.setLastError(ex2);
@@ -350,7 +355,8 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 			}
 		} catch (Exception ex3) {
 			if (this.logger.isErrorEnabled()) {
-				this.logger.error("Error sending command: " + data + " to: " + this.host + " port: " + this.port + " connection state: " + this.status.getConnectionState() + " error: ", ex3);
+				this.logger.error("Error sending command: ".concat(data).concat(" to: ").concat(this.host).concat(" port: ").concat(String.valueOf(this.port)).concat(" connection state: ").concat(
+						String.valueOf(this.status.getConnectionState())).concat(" error: "), ex3);
 			}
 
 			this.status.setLastError(ex3);
@@ -365,11 +371,24 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		}
 	}
 
+	/**
+	 * This method used to send and receive response from device
+	 *
+	 * @param outputData is the data to be sent
+	 * @return String array is the response from device
+	 * @throws IOException if read or write fail
+	 */
 	private String[] internalSend(String outputData) throws IOException {
 		this.write(outputData);
 		return this.read(outputData, this.socket.getInputStream());
 	}
 
+	/**
+	 * This method used to send data to the device
+	 *
+	 * @param outputData is the data to be sent
+	 * @throws IOException if write to stream fail
+	 */
 	private void write(String outputData) throws IOException {
 		if (this.socket == null) {
 			throw new IllegalStateException("Socket connection was not established. Please check target host availability and credentials.");
@@ -381,9 +400,17 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		}
 	}
 
+	/**
+	 * This method used to read response return from device
+	 *
+	 * @param command is the command sent to device
+	 * @param in is the input stream to read response
+	 * @return String array is the response from device
+	 * @throws IOException if read fail
+	 */
 	private String[] read(String command, InputStream in) throws IOException {
 		if (this.logger.isDebugEnabled()) {
-			this.logger.debug("DEBUG - Socket Communicator reading after command text \"" + command + "\" was sent to host " + this.host);
+			this.logger.debug("DEBUG - Socket Communicator reading after command text \"".concat(command).concat("\" was sent to host ").concat(this.host));
 		}
 
 		// Count number of responses
@@ -413,7 +440,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 	@Override
 	protected void internalDestroy() {
 		if (this.logger.isTraceEnabled()) {
-			this.logger.trace("Destroying communication channel to: " + this.host + " port: " + this.port);
+			this.logger.trace("Destroying communication channel to: ".concat(this.host).concat(" port: ").concat(String.valueOf(this.port)));
 		}
 
 		this.destroyChannel();
@@ -433,7 +460,7 @@ public class QRCCommunicator extends BaseDevice implements Communicator {
 		}
 
 		if (this.port <= 0) {
-			throw new IllegalStateException("Invalid port property: " + this.port + " (must be positive number)");
+			throw new IllegalStateException("Invalid port property: ".concat(String.valueOf(this.port)).concat(" (must be positive number)"));
 		}
 	}
 }
