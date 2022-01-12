@@ -82,10 +82,10 @@ class QSYSCoreCommunicatorTest {
 	}
 
 	/**
-	 * Test QSYSCoreCommunicator.getMultipleStatistics successful with valid username password
+	 * Test QSYSCoreCommunicator.getMultipleStatistics will not retrieve token when username and password are empty
 	 * Expected retrieve valid device monitoring data
 	 */
-	@Tag("RealDevice")
+	@Tag("Mock")
 	@Test
 	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
 
