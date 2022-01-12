@@ -46,7 +46,7 @@ jobs:
       - name: Version set # setting new version in POM file
         run: mvn versions:set versions:commit -DnewVersion=${{ needs.versiongenerate.outputs.version }}
       - name: Build and test with Maven # running maven build with any specific parameters
-        run: mvn clean install -DskipTests
+        run: mvn clean install
       - name: PMD check # running static code analysis
         run: mvn pmd:check
       - id: getfilename # retrieving full artifact path
