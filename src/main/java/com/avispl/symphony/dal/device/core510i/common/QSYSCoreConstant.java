@@ -23,6 +23,7 @@ public class QSYSCoreConstant {
 	public static final String AUTHORIZED = "Authorized";
 	public static final String GETTING_DEVICE_INFO_ERR = "failed to get device info";
 	public static final String GETTING_DEVICE_IP_ERR = "failed to get device IP Address";
+	public static final String GETTING_TOKEN_ERR = "Username and Password are incorrect";
 	public static final String GETTING_MIN_MAX_ERR = "Min or max value has wrong number format";
 	public static final String PASSWORD = "password";
 	public static final String USERNAME = "username";
