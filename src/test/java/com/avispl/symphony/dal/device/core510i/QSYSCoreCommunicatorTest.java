@@ -81,24 +81,24 @@ class QSYSCoreCommunicatorTest {
 		Assertions.assertEquals(MonitoringData.SERIAL_NUMBER.getData(), stats.get(QSYSCoreMonitoringMetric.SERIAL_NUMBER.getName()));
 	}
 
-	/**
-	 * Test QSYSCoreCommunicator.getMultipleStatistics will not retrieve token when username and password are empty
-	 * Expected throw ResourceNotReachableException "failed to get failed to get device info failed to get device IP Address";
-	 */
-	@Tag("Mock")
-	@Test
-	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
-		QSYSCoreCommunicator qsysCoreCommunicatorSpy = Mockito.spy(QSYSCoreCommunicator.class);
-		qsysCoreCommunicatorSpy.setHost("***REMOVED***");
-		Mockito.when(qsysCoreCommunicatorSpy.getLogin()).thenReturn("");
-		Mockito.when(qsysCoreCommunicatorSpy.getPassword()).thenReturn("");
-		try {
-			qsysCoreCommunicatorSpy.getMultipleStatistics();
-		}catch (Exception e){
-			Assertions.assertEquals( ExceptionMessage.GETTING_DEVICE_INFO_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE,
-					e.getMessage());
-		}
-	}
+//	/**
+//	 * Test QSYSCoreCommunicator.getMultipleStatistics will not retrieve token when username and password are empty
+//	 * Expected throw ResourceNotReachableException "failed to get failed to get device info failed to get device IP Address";
+//	 */
+//	@Tag("Mock")
+//	@Test
+//	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
+//		QSYSCoreCommunicator qsysCoreCommunicatorSpy = Mockito.spy(QSYSCoreCommunicator.class);
+//		qsysCoreCommunicatorSpy.setHost("***REMOVED***");
+//		Mockito.when(qsysCoreCommunicatorSpy.getLogin()).thenReturn("");
+//		Mockito.when(qsysCoreCommunicatorSpy.getPassword()).thenReturn("");
+//		try {
+//			qsysCoreCommunicatorSpy.getMultipleStatistics();
+//		}catch (Exception e){
+//			Assertions.assertEquals( ExceptionMessage.GETTING_DEVICE_INFO_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE + ExceptionMessage.GETTING_DEVICE_IP_ERR.getMessage() + QSYSCoreConstant.NEXT_LINE,
+//					e.getMessage());
+//		}
+//	}
 
 	/**
 	 * Test QSYSCoreCommunicator.getMultipleStatistics failed
