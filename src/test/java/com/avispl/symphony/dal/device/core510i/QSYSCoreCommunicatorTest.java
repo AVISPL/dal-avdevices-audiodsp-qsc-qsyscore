@@ -88,7 +88,6 @@ class QSYSCoreCommunicatorTest {
 	@Tag("Mock")
 	@Test
 	void testQSysCoreCommunicatorDeviceHaveDataWithAccessControlDisable() {
-
 		QSYSCoreCommunicator qsysCoreCommunicatorSpy = Mockito.spy(QSYSCoreCommunicator.class);
 		qsysCoreCommunicatorSpy.setHost("***REMOVED***");
 		Mockito.when(qsysCoreCommunicatorSpy.getLogin()).thenReturn("");
@@ -121,7 +120,7 @@ class QSYSCoreCommunicatorTest {
 	 * Test QSYSCoreCommunicator.handleGainInputFromUser successful with input gain from user
 	 * Expected handle input gain from user success
 	 */
-	@Tag("Mock")
+	@Tag("RealDevice")
 	@Test
 	void testHandleGainInputFromUser() {
 		String inputGain = "  test  ,  test  test   , test ,test";
