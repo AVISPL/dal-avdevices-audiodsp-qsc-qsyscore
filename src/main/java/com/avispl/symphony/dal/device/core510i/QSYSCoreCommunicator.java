@@ -81,6 +81,7 @@ import com.avispl.symphony.dal.util.StringUtils;
 public class QSYSCoreCommunicator extends RestCommunicator implements Monitorable, Controller {
 
 	private String gain;
+	private String qrcPort = String.valueOf(QSYSCoreConstant.QRC_PORT);
 	private QRCCommunicator qrcCommunicator;
 	private Map<String, String> failedMonitor;
 	private LoginInfo loginInfo;
@@ -106,6 +107,24 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 */
 	public void setGain(String gain) {
 		this.gain = gain;
+	}
+
+	/**
+	 * Retrieves {@code {@link #qrcPort}}
+	 *
+	 * @return value of {@link #qrcPort}
+	 */
+	public String getQrcPort() {
+		return qrcPort;
+	}
+
+	/**
+	 * Sets {@code qrcPort}
+	 *
+	 * @param qrcPort the {@code java.lang.String} field
+	 */
+	public void setQrcPort(String qrcPort) {
+		this.qrcPort = qrcPort;
 	}
 
 	@Override
@@ -258,9 +277,19 @@ public class QSYSCoreCommunicator extends RestCommunicator implements Monitorabl
 	 * @throws Exception if init fail
 	 */
 	public void initQRCCommunicator() throws Exception {
+		int port;
+		try {
+			port = Integer.parseInt(this.qrcPort);
+			if (port < QSYSCoreConstant.MIN_PORT || port > QSYSCoreConstant.MAX_PORT) {
+				throw new IllegalArgumentException();
+			}
+		} catch (Exception e) {
+			throw new IllegalArgumentException("QRC Port must be a valid port number");
+		}
+
 		qrcCommunicator = new QRCCommunicator();
 		qrcCommunicator.setHost(this.host);
-		qrcCommunicator.setPort(QSYSCoreConstant.QRC_PORT);
+		qrcCommunicator.setPort(port);
 		qrcCommunicator.init();
 	}
 
