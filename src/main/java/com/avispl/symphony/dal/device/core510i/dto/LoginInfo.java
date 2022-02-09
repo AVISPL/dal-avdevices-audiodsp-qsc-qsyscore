@@ -53,7 +53,11 @@ public class LoginInfo {
 		this.token = token;
 	}
 
+
 	/**
+	 * Check token expiry time
+	 * Token is timeout when elapsed > 55 min
+	 *
 	 * @return boolean
 	 */
 	public boolean isTimeout() {
