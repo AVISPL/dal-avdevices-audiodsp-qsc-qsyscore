@@ -19,7 +19,9 @@ jobs:
     - name: Set up JDK 1.8 & run tests & generate artifacts
       uses: actions/setup-java@v3
       with:
-        java-version: 1.8
+        distribution: adopt
+        java-version: 8
+        overwrite-settings: false
     - id: date
       run: echo "date=$(date +'%y%m%d' | cut -c 2-)" >> $GITHUB_OUTPUT
     - id: shortrev
@@ -42,7 +44,9 @@ jobs:
     - name: Set up JDK 1.8 & run tests & generate artifacts
       uses: actions/setup-java@v3
       with:
-        java-version: 1.8
+        distribution: adopt
+        java-version: 8
+        overwrite-settings: false
     - name: Version set
       run: mvn versions:set versions:commit -DnewVersion=${{ needs.versiongenerate.outputs.version }}
     - name: Build and test with Maven
